@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">丑颜相机</string>
+    <string name="init">初始化</string>
+    <string name="takePhoto">拍照</string>
+    <string name="startRecord">开始录像</string>
+    <string name="stopRecord">停止录像</string>
+</resources>
