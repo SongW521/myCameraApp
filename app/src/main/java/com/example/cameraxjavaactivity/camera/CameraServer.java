@@ -1,16 +1,26 @@
 package com.example.cameraxjavaactivity.camera;
 
+import static com.example.cameraxjavaactivity.MainActivity.REQUEST_CODE_PERMISSIONS;
+import static com.example.cameraxjavaactivity.MainActivity.REQUIRE_PERMISSIONS;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Rational;
 import android.view.OrientationEventListener;
 import android.view.Surface;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.camera.core.Camera;
@@ -55,6 +65,9 @@ public class CameraServer {
     private final PreviewView previewView;
     private final Context context;
     private final LifecycleOwner lifecycleOwner;
+    private  Uri savedUri;
+
+    private boolean isUsingFrontCamera = false;
 
 
     ProcessCameraProvider processCameraProvider;
@@ -169,11 +182,73 @@ public class CameraServer {
     public void setFlashMode(int mode) {
         imageCapture.setFlashMode(mode);
     }
+    /**
+     * 切换镜头
+     * */
+    public void switchCamera() {
+        isUsingFrontCamera = !isUsingFrontCamera;
+        CameraSelector cameraSelector = isUsingFrontCamera ? CameraSelector.DEFAULT_FRONT_CAMERA : CameraSelector.DEFAULT_BACK_CAMERA;
 
+        if (processCameraProvider != null) {
+            try {
+                // Unbind all use cases
+                processCameraProvider.unbindAll();
+
+                // Bind use cases to the selected camera
+                Preview preview = new Preview.Builder().build();
+                preview.setSurfaceProvider(previewView.getSurfaceProvider());
+
+                ViewPort viewPort = new ViewPort.Builder(
+                        new Rational(100, 100), previewView.getDisplay().getRotation()
+                ).build();
+
+                UseCaseGroup useCaseGroup = new UseCaseGroup.Builder()
+                        .addUseCase(preview)
+                        .addUseCase(imageAnalysis)
+                        .addUseCase(imageCapture)
+                        .addUseCase(videoCapture)
+                        .setViewPort(viewPort)
+                        .build();
+
+                Camera camera = processCameraProvider.bindToLifecycle(lifecycleOwner, cameraSelector, useCaseGroup);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    /**
+     * 查看保存的照片
+     *
+     */
+    public void viewPhoto() {
+
+        if (savedUri != null) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(savedUri, "image/*");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            context.startActivity(intent);
+        }
+    }
+    /**
+     * 更新 ImageButton 的图像
+     *imgButton 绑定的按键
+     */
+    public void updateButtonImage(ImageButton imgButton) {
+        if (savedUri != null) {
+            try {
+                // 从 URI 加载图像并设置到 ImageButton
+                Bitmap bitmap = BitmapFactory.decodeStream(context.getContentResolver().openInputStream(savedUri));
+                imgButton.setImageBitmap(bitmap);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
     /**
      * 拍照功能
      * */
-    public void takePhoto() {
+    public void takePhoto(ImageButton photoBindButton) {
         // Take photo logic...
         if (imageCapture != null) {
             //ContentValues
@@ -191,8 +266,10 @@ public class CameraServer {
             imageCapture.takePicture(outputFileOptions, ContextCompat.getMainExecutor(this.context), new ImageCapture.OnImageSavedCallback() {
                 @Override
                 public void onImageSaved(@NonNull ImageCapture.OutputFileResults outputFileResults) {
+                    savedUri = outputFileResults.getSavedUri();
+                    photoBindButton.setScaleType(ImageView.ScaleType.FIT_CENTER);
+                    photoBindButton.setImageURI(savedUri);
                     Log.i("CameraXTest", Objects.requireNonNull(outputFileResults.getSavedUri()).toString());
-
                 }
 
                 @Override
@@ -207,41 +284,37 @@ public class CameraServer {
      * 录像功能
      * * @param mode   0 -- auto  1 -- open    2 -- close
      * */
-    private void startRecording() {
-        if (videoCapture != null) {
-            String name = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.SIMPLIFIED_CHINESE).format(System.currentTimeMillis()) + ".mp4";
-            ContentValues contentValues = new ContentValues();
-            contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
-            contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, "Movies/CameraVideo");
-            }
-            MediaStoreOutputOptions mediaStoreOutputOptions = new MediaStoreOutputOptions
-                    .Builder(context.getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-                    .setContentValues(contentValues)
-                    .build();
+    public void startRecording() {
+        String name = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss-SSS", Locale.SIMPLIFIED_CHINESE).format(System.currentTimeMillis()) + ".mp4";
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MediaStore.MediaColumns.DISPLAY_NAME, name);
+        contentValues.put(MediaStore.MediaColumns.MIME_TYPE, "video/mp4");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            contentValues.put(MediaStore.MediaColumns.RELATIVE_PATH, "Movies/CameraVideo");
         }
-    }
+        MediaStoreOutputOptions mediaStoreOutputOptions = new MediaStoreOutputOptions
+                .Builder(context.getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+                .setContentValues(contentValues)
+                .build();
+        Recorder recorder = (Recorder) videoCapture.getOutput();
 
-    private void stopRecording() {
+        recording = ((Recorder) videoCapture.getOutput())
+                .prepareRecording(this.context, mediaStoreOutputOptions)
+                .start(ContextCompat.getMainExecutor(this.context), videoRecordEvent -> {
+                    if (videoRecordEvent instanceof VideoRecordEvent.Start) {
+
+                    } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
+                        if (!((VideoRecordEvent.Finalize) videoRecordEvent).hasError()) {
+                            Toast.makeText(this.context, "Recording saved successfully", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+    public void stopRecording() {
         if (recording != null) {
             recording.stop();
             recording = null;
         }
-    }
-    /**
-     * 切换镜头
-     * */
-    public void setShotCut(int mode){
-
-        // 重新绑定用例
-        if (processCameraProvider != null) {
-            processCameraProvider.unbindAll();
-            Camera camera = processCameraProvider.bindToLifecycle(lifecycleOwner, CameraSelector.DEFAULT_FRONT_CAMERA, imageCapture);
-            CameraControl cameraControl = camera.getCameraControl();
-            CameraInfo cameraInfo = camera.getCameraInfo();
-        }
-
     }
     public void releaseCamera() {
         // Release camera resources...
