@@ -31,6 +31,7 @@ public class PhotoFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_photo, container, false);
         PreviewView previewView = view.findViewById(R.id.preview_view);
+        bindViewInit(view);
         cameraServer = new CameraServer(requireContext(), previewView, (LifecycleOwner) getContext());
         animation = new AnimationUtil();
         return view;
@@ -49,7 +50,7 @@ public class PhotoFragment extends Fragment {
         previewView = view.findViewById(R.id.preview_view);
         flashView = view.findViewById(R.id.flashView);
         takePhotoButton.setOnClickListener(v -> {
-            animation.setFlashViewAnimation(v);
+            animation.setFlashViewAnimation(flashView);
             animation.setButtonClickAnimation(v);
             cameraServer.takePhoto(viewPhotoButton);
         });
