@@ -21,6 +21,7 @@ import android.view.animation.Animation;
 import android.widget.ImageButton;
 
 import com.example.cameraxjavaactivity.camera.CameraServer;
+import com.example.cameraxjavaactivity.utils.AnimationUtil;
 
 public class MainActivity extends AppCompatActivity {
     //按钮
@@ -34,11 +35,13 @@ public class MainActivity extends AppCompatActivity {
     public static final String[] REQUIRE_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
     public static final int REQUEST_CODE_PERMISSIONS = 10;
     private CameraServer cameraServer;
+    private AnimationUtil controllerAnimation;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        controllerAnimation = new AnimationUtil();
         //绑定控件
         takePhotoButton = findViewById(R.id.takePhotoBtn);
         switchCameraButton = findViewById(R.id.switchCameraBtn);
@@ -46,15 +49,16 @@ public class MainActivity extends AppCompatActivity {
         previewView = findViewById(R.id.preview_view);
         flashView = findViewById(R.id.flashView);
         takePhotoButton.setOnClickListener(v -> {
-            setFlashViewAnimation();
-            setButtonClickAnimation(v);
+            controllerAnimation.setFlashViewAnimation(flashView);
+            controllerAnimation.setButtonClickAnimation(v);
             cameraServer.takePhoto(viewPhotoButton);
         });
         switchCameraButton.setOnClickListener(v -> {
-            setButtonRscTurnAnimation(switchCameraButton);
+            controllerAnimation.setButtonRscTurnAnimation(switchCameraButton);
             cameraServer.switchCamera();
         });
         viewPhotoButton.setOnClickListener(v -> {
+            controllerAnimation.setButtonClickAnimation(v);
             cameraServer.viewPhoto();
         });
 
@@ -92,59 +96,4 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
-    public void setButtonRscTurnAnimation(ImageButton button) {
-        ObjectAnimator rotateAnimator = ObjectAnimator.ofFloat(button, "rotation", 0f, 180f);
-        rotateAnimator.setDuration(300); // 设置动画持续时间
-        rotateAnimator.start(); // 开始动画
-    }
-
-    private void setButtonClickAnimation(View view) {
-
-        ObjectAnimator scaleDownX = ObjectAnimator.ofFloat(view, "scaleX", 0.7f);
-        ObjectAnimator scaleDownY = ObjectAnimator.ofFloat(view, "scaleY", 0.7f);
-        scaleDownX.setDuration(200);
-        scaleDownY.setDuration(200);
-
-        ObjectAnimator scaleUpX = ObjectAnimator.ofFloat(view, "scaleX", 1f);
-        ObjectAnimator scaleUpY = ObjectAnimator.ofFloat(view, "scaleY", 1f);
-        scaleUpX.setDuration(200);
-        scaleUpY.setDuration(200);
-
-        scaleDownX.setInterpolator(new AccelerateDecelerateInterpolator());
-        scaleDownY.setInterpolator(new AccelerateDecelerateInterpolator());
-        scaleUpX.setInterpolator(new AccelerateDecelerateInterpolator());
-        scaleUpY.setInterpolator(new AccelerateDecelerateInterpolator());
-
-        scaleDownX.start();
-        scaleDownY.start();
-        scaleDownX.addListener(new AnimatorListenerAdapter() {
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                scaleUpX.start();
-                scaleUpY.start();
-            }
-        });
-    }
-
-    private void setFlashViewAnimation() {
-        //设置拍照完成动画
-        flashView.setVisibility(View.VISIBLE);
-        AlphaAnimation fade = new AlphaAnimation(1, 0);
-        fade.setDuration(300);
-        fade.setAnimationListener(new Animation.AnimationListener() {
-            @Override
-            public void onAnimationStart(Animation animation) {
-            }
-
-            @Override
-            public void onAnimationEnd(Animation animation) {
-                flashView.setVisibility(View.GONE);
-            }
-
-            @Override
-            public void onAnimationRepeat(Animation animation) {
-            }
-        });
-        flashView.startAnimation(fade);
-    }
 }

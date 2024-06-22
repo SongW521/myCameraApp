@@ -56,15 +56,15 @@ import java.util.concurrent.Executors;
 
 // CameraController.java
 public class CameraServer {
-    private ProcessCameraProvider cameraProvider;
-    private ImageCapture imageCapture;
-    private VideoCapture videoCapture;
-    private Recording recording;
-    private ImageAnalysis imageAnalysis;
-    private final ExecutorService cameraExecutor;
-    private final PreviewView previewView;
-    private final Context context;
-    private final LifecycleOwner lifecycleOwner;
+    protected ProcessCameraProvider cameraProvider;
+    protected ImageCapture imageCapture;
+    protected VideoCapture videoCapture;
+    protected Recording recording;
+    protected ImageAnalysis imageAnalysis;
+    protected final ExecutorService cameraExecutor;
+    protected final PreviewView previewView;
+    protected final Context context;
+    protected final LifecycleOwner lifecycleOwner;
     private  Uri savedUri;
 
     private boolean isUsingFrontCamera = false;
