@@ -5,6 +5,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
 import android.Manifest;
 import android.animation.Animator;
@@ -21,7 +25,11 @@ import android.view.animation.Animation;
 import android.widget.ImageButton;
 
 import com.example.cameraxjavaactivity.camera.CameraServer;
+import com.example.cameraxjavaactivity.fragment.PhotoFragment;
+import com.example.cameraxjavaactivity.fragment.VideoFragment;
 import com.example.cameraxjavaactivity.utils.AnimationUtil;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
 public class MainActivity extends AppCompatActivity {
     //按钮
@@ -34,37 +42,34 @@ public class MainActivity extends AppCompatActivity {
     //权限
     public static final String[] REQUIRE_PERMISSIONS = new String[]{Manifest.permission.CAMERA, Manifest.permission.RECORD_AUDIO};
     public static final int REQUEST_CODE_PERMISSIONS = 10;
-    private CameraServer cameraServer;
-    private AnimationUtil controllerAnimation;
+    private ViewPager2 viewPager;
+    private TabLayout tabLayout;
     @SuppressLint("MissingInflatedId")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        controllerAnimation = new AnimationUtil();
-        //绑定控件
-        takePhotoButton = findViewById(R.id.takePhotoBtn);
-        switchCameraButton = findViewById(R.id.switchCameraBtn);
-        viewPhotoButton = findViewById(R.id.viewPhotoBtn);
-        previewView = findViewById(R.id.preview_view);
-        flashView = findViewById(R.id.flashView);
-        takePhotoButton.setOnClickListener(v -> {
-            controllerAnimation.setFlashViewAnimation(flashView);
-            controllerAnimation.setButtonClickAnimation(v);
-            cameraServer.takePhoto(viewPhotoButton);
-        });
-        switchCameraButton.setOnClickListener(v -> {
-            controllerAnimation.setButtonRscTurnAnimation(switchCameraButton);
-            cameraServer.switchCamera();
-        });
-        viewPhotoButton.setOnClickListener(v -> {
-            controllerAnimation.setButtonClickAnimation(v);
-            cameraServer.viewPhoto();
-        });
 
+        //绑定控件
+        viewPager = findViewById(R.id.viewPager);
+        tabLayout = findViewById(R.id.tabLayout);
+        tabLayout.bringToFront();
+
+        viewPager.setAdapter(new FragmentAdapter(this));
+
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            switch (position) {
+                case 0:
+                    tab.setText("拍照");
+                    break;
+                case 1:
+                    tab.setText("录像");
+                    break;
+            }
+        }).attach();
         //获取权限
         if (havePermissions()) {
-            cameraServer = new CameraServer(this, previewView, this);
+            //cameraServer = new CameraServer(this, previewView, this);
         } else {
             ActivityCompat.requestPermissions(this, REQUIRE_PERMISSIONS, REQUEST_CODE_PERMISSIONS);
         }
@@ -73,14 +78,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        cameraServer.releaseCamera();
+
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == REQUEST_CODE_PERMISSIONS) {
-            cameraServer = new CameraServer(this, previewView, this);
+            //cameraServer = new CameraServer(this, previewView, this);
         } else {
             finish();
         }
@@ -95,5 +100,28 @@ public class MainActivity extends AppCompatActivity {
         }
         return true;
     }
+    private static class FragmentAdapter extends FragmentStateAdapter {
 
+        public FragmentAdapter(@NonNull FragmentActivity fragmentActivity) {
+            super(fragmentActivity);
+        }
+
+        @NonNull
+        @Override
+        public Fragment createFragment(int position) {
+            switch (position) {
+                case 0:
+                    return new PhotoFragment();
+                case 1:
+                    return new VideoFragment();
+                default:
+                    return new PhotoFragment();
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return 2;
+        }
+    }
 }

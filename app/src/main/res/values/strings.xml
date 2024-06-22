@@ -5,6 +5,8 @@
     <string name="startRecord">录像</string>
     <string name="shotCut">切换镜头</string>
     <string name="viewPhoto">预览图片</string>
+    <string name="photo_tab">Photo tab</string>
+    <string name="video_tab">Video tab</string>
 
 
 </resources>

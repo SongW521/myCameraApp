@@ -30,11 +30,22 @@ public class PhotoFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_photo, container, false);
-        PreviewView previewView = view.findViewById(R.id.preview_view);
         bindViewInit(view);
         cameraServer = new CameraServer(requireContext(), previewView, (LifecycleOwner) getContext());
         animation = new AnimationUtil();
         return view;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        cameraServer.initCamera(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        cameraServer.unbindingCamera();
     }
 
     @Override
@@ -47,7 +58,7 @@ public class PhotoFragment extends Fragment {
         takePhotoButton = view.findViewById(R.id.takePhotoBtn);
         switchCameraButton = view.findViewById(R.id.switchCameraBtn);
         viewPhotoButton = view.findViewById(R.id.viewPhotoBtn);
-        previewView = view.findViewById(R.id.preview_view);
+        previewView = view.findViewById(R.id.photo_preview);
         flashView = view.findViewById(R.id.flashView);
         takePhotoButton.setOnClickListener(v -> {
             animation.setFlashViewAnimation(flashView);

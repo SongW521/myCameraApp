@@ -86,7 +86,7 @@ public class CameraServer {
     /**
      * 初始化相机参数
      * */
-    private void initCamera(LifecycleOwner lifecycleOwner) {
+    public void initCamera(LifecycleOwner lifecycleOwner) {
         // Camera initialization logic...
         //实例化（可以设置许多属性)
         imageCapture = new ImageCapture.Builder()
@@ -134,6 +134,12 @@ public class CameraServer {
                 e.printStackTrace();
             }
         }, ContextCompat.getMainExecutor(this.context));
+    }
+
+    public void unbindingCamera(){
+        if (cameraProvider != null) {
+            cameraProvider.unbindAll();
+        }
     }
 
     /**

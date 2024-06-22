@@ -14,7 +14,7 @@
 
         <!-- PreviewView for camera preview -->
         <androidx.camera.view.PreviewView
-            android:id="@+id/preview_view"
+            android:id="@+id/video_preview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
 
@@ -30,7 +30,7 @@
     </FrameLayout>
 
     <ImageButton
-        android:id="@+id/switchCameraBtn"
+        android:id="@+id/video_switchBtn"
         android:layout_width="50dp"
         android:layout_height="50dp"
         android:background="@drawable/shiftcamera"
@@ -62,8 +62,9 @@
             android:contentDescription="@string/takePhoto"
              />
         <View
-            android:layout_width="50sp"
-            android:layout_height="50sp"
+            android:id="@+id/icon"
+            android:layout_width="40sp"
+            android:layout_height="40sp"
             android:layout_gravity="center"
             android:background="@drawable/circular_red"
 
@@ -73,7 +74,7 @@
 
 
     <ImageButton
-        android:id="@+id/viewPhotoBtn"
+        android:id="@+id/viewVideoBtn"
         android:layout_width="50sp"
         android:layout_height="50sp"
         android:padding="10dp"

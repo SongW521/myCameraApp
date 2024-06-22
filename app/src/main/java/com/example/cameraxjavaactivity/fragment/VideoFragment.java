@@ -1,5 +1,6 @@
 package com.example.cameraxjavaactivity.fragment;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,21 +22,34 @@ public class VideoFragment extends Fragment {
     private AnimationUtil animation;
     ImageButton takeVideoButton;
     ImageButton switchCameraButton;
-    ImageButton viewPhotoButton;
+    ImageButton viewVideoButton;
     //预览
     PreviewView previewView;
-    View flashView;
+
+    View icon ;
+
+    boolean isRecording = false;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_video, container, false);
-        PreviewView previewView = view.findViewById(R.id.preview_view);
         bindViewInit(view);
         cameraServer = new CameraServer(requireContext(), previewView, (LifecycleOwner) getContext());
         animation = new AnimationUtil();
         return view;
     }
+    @Override
+    public void onResume() {
+        super.onResume();
+        cameraServer.initCamera(this);
+    }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        cameraServer.unbindingCamera();
+    }
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -43,23 +57,35 @@ public class VideoFragment extends Fragment {
     }
 
     private void bindViewInit(View view){
-        takeVideoButton = view.findViewById(R.id.takePhotoBtn);
-        switchCameraButton = view.findViewById(R.id.switchCameraBtn);
-        viewPhotoButton = view.findViewById(R.id.viewPhotoBtn);
-        previewView = view.findViewById(R.id.preview_view);
-        flashView = view.findViewById(R.id.flashView);
+        takeVideoButton = view.findViewById(R.id.takeVideoBtn);
+        switchCameraButton = view.findViewById(R.id.video_switchBtn);
+        viewVideoButton = view.findViewById(R.id.viewVideoBtn);
+        previewView = view.findViewById(R.id.video_preview);
+        icon = view.findViewById(R.id.icon);
         takeVideoButton.setOnClickListener(v -> {
-            animation.setFlashViewAnimation(flashView);
             animation.setButtonClickAnimation(v);
-            cameraServer.takePhoto(viewPhotoButton);
+            recordingCallback();
         });
         switchCameraButton.setOnClickListener(v -> {
             animation.setButtonRscTurnAnimation(switchCameraButton);
             cameraServer.switchCamera();
         });
-        viewPhotoButton.setOnClickListener(v -> {
+        viewVideoButton.setOnClickListener(v -> {
             animation.setButtonClickAnimation(v);
             cameraServer.viewPhoto();
         });
+    }
+
+    @SuppressLint("UseCompatLoadingForDrawables")
+    private void recordingCallback() {
+        isRecording = !isRecording;
+        if(isRecording){
+            icon.setBackground(getResources().getDrawable(R.drawable.radius_red));
+            cameraServer.startRecording();
+        }
+        else{
+            icon.setBackground(getResources().getDrawable(R.drawable.circular_red));
+            cameraServer.stopRecording();
+        }
     }
 }
