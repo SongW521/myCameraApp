@@ -1,5 +1,6 @@
 package com.example.cameraxjavaactivity.camera;
 
+import static androidx.core.content.ContextCompat.startActivity;
 import static com.example.cameraxjavaactivity.MainActivity.REQUEST_CODE_PERMISSIONS;
 import static com.example.cameraxjavaactivity.MainActivity.REQUIRE_PERMISSIONS;
 
@@ -66,6 +67,7 @@ public class CameraServer {
     protected final Context context;
     protected final LifecycleOwner lifecycleOwner;
     private  Uri savedUri;
+    private  Uri videoUri;
 
     private boolean isUsingFrontCamera = false;
 
@@ -236,6 +238,16 @@ public class CameraServer {
             context.startActivity(intent);
         }
     }
+    public void openSavedVideo() {
+        if (videoUri != null) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setDataAndType(videoUri, "video/*");
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            context.startActivity(intent);
+        }
+
+
+    }
     /**
      * 更新 ImageButton 的图像
      *imgButton 绑定的按键
@@ -308,10 +320,11 @@ public class CameraServer {
                 .prepareRecording(this.context, mediaStoreOutputOptions)
                 .start(ContextCompat.getMainExecutor(this.context), videoRecordEvent -> {
                     if (videoRecordEvent instanceof VideoRecordEvent.Start) {
-
+                        Toast.makeText(this.context, "开始录制", Toast.LENGTH_SHORT).show();
                     } else if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
                         if (!((VideoRecordEvent.Finalize) videoRecordEvent).hasError()) {
-                            Toast.makeText(this.context, "Recording saved successfully", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(this.context, "保存成功", Toast.LENGTH_SHORT).show();
+                            videoUri = mediaStoreOutputOptions.getCollectionUri();
                         }
                     }
                 });

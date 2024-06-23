@@ -23,12 +23,15 @@ public class VideoFragment extends Fragment {
     ImageButton takeVideoButton;
     ImageButton switchCameraButton;
     ImageButton viewVideoButton;
+    ImageButton videoFlashModeBtn;
     //预览
     PreviewView previewView;
+
 
     View icon ;
 
     boolean isRecording = false;
+    int curFlashMode = 0;
 
     @Nullable
     @Override
@@ -61,6 +64,7 @@ public class VideoFragment extends Fragment {
         switchCameraButton = view.findViewById(R.id.video_switchBtn);
         viewVideoButton = view.findViewById(R.id.viewVideoBtn);
         previewView = view.findViewById(R.id.video_preview);
+        videoFlashModeBtn = view.findViewById(R.id.flashVideo);
         icon = view.findViewById(R.id.icon);
         takeVideoButton.setOnClickListener(v -> {
             animation.setButtonClickAnimation(v);
@@ -72,8 +76,31 @@ public class VideoFragment extends Fragment {
         });
         viewVideoButton.setOnClickListener(v -> {
             animation.setButtonClickAnimation(v);
-            cameraServer.viewPhoto();
+            cameraServer.openSavedVideo();
         });
+        videoFlashModeBtn.setOnClickListener(v ->{
+            modeChangeCallback();
+        });
+
+    }
+
+    private void modeChangeCallback() {
+        curFlashMode ++;
+        curFlashMode %= 3;
+        switch (curFlashMode){
+            case 0:
+                videoFlashModeBtn.setBackground(getResources().getDrawable(R.drawable.flash_auto));
+                cameraServer.setFlashMode(curFlashMode);
+                break;
+            case 1:
+                videoFlashModeBtn.setBackground(getResources().getDrawable(R.drawable.flash_on));
+                cameraServer.setFlashMode(curFlashMode);
+                break;
+            case 2:
+                videoFlashModeBtn.setBackground(getResources().getDrawable(R.drawable.flash_off));
+                cameraServer.setFlashMode(curFlashMode);
+                break;
+        }
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")

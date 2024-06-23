@@ -3,6 +3,31 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ImageButton
+        android:id="@+id/flashVideo"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/flash_auto"
+        android:contentDescription="@string/shotCut"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/layout"
+        app:layout_constraintHorizontal_bias="0.361"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.01" />
+    <ImageButton
+        android:id="@+id/videoSetBtn"
+        android:layout_width="40sp"
+        android:layout_height="40sp"
+        android:padding="10dp"
+        android:background="@drawable/moreset"
+        android:contentDescription="@string/viewPhoto"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.888"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.01" />
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="480sp"
@@ -10,7 +35,7 @@
         app:layout_constraintEnd_toStartOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias=".3">
+        app:layout_constraintVertical_bias=".2">
 
         <!-- PreviewView for camera preview -->
         <androidx.camera.view.PreviewView

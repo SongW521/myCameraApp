@@ -23,9 +23,11 @@ public class PhotoFragment extends Fragment {
     ImageButton takePhotoButton;
     ImageButton switchCameraButton;
     ImageButton viewPhotoButton;
+    ImageButton flashModeBtn;
     //预览
     PreviewView previewView;
     View flashView;
+    int curFlashMode = 0;
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -60,6 +62,7 @@ public class PhotoFragment extends Fragment {
         viewPhotoButton = view.findViewById(R.id.viewPhotoBtn);
         previewView = view.findViewById(R.id.photo_preview);
         flashView = view.findViewById(R.id.flashView);
+        flashModeBtn = view.findViewById(R.id.flashModeBtn);
         takePhotoButton.setOnClickListener(v -> {
             animation.setFlashViewAnimation(flashView);
             animation.setButtonClickAnimation(v);
@@ -73,5 +76,26 @@ public class PhotoFragment extends Fragment {
             animation.setButtonClickAnimation(v);
             cameraServer.viewPhoto();
         });
+        flashModeBtn.setOnClickListener(v->{
+            modeChangeCallback();
+        });
+    }
+    private void modeChangeCallback() {
+        curFlashMode ++;
+        curFlashMode %= 3;
+        switch (curFlashMode){
+            case 0:
+                flashModeBtn.setBackground(getResources().getDrawable(R.drawable.flash_auto));
+                cameraServer.setFlashMode(curFlashMode);
+                break;
+            case 1:
+                flashModeBtn.setBackground(getResources().getDrawable(R.drawable.flash_on));
+                cameraServer.setFlashMode(curFlashMode);
+                break;
+            case 2:
+                flashModeBtn.setBackground(getResources().getDrawable(R.drawable.flash_off));
+                cameraServer.setFlashMode(curFlashMode);
+                break;
+        }
     }
 }
